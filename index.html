@@ -88,6 +88,104 @@
         .op-col { text-align: center; width: 60px; }
         .val-col-r { text-align: right; }
         .val-col-l { text-align: left; }
+
+        /* Superscript styling for power */
+        .sup-exp {
+            vertical-align: super;
+            font-size: 0.6em;
+            margin-left: 2px;
+        }
+        .sup-exp-btn {
+            position: relative;
+            top: -0.2em;
+            font-size: 0.6em;
+            margin-left: 2px;
+        }
+
+        /* Tips Button & Container */
+        #tips-btn-wrapper {
+            position: absolute;
+            left: 100%;
+            top: 0;
+            bottom: 0;
+            margin-left: 8px; /* Tighter margin */
+            display: flex;
+            align-items: center;
+        }
+        #answer-helper-btn {
+            background-color: #3b82f6; /* Blue */
+            color: white;
+            border: none;
+            padding: 0;
+            width: 80px;
+            height: 5rem; /* Match input height */
+            border-radius: 8px; 
+            font-size: 1.1rem; 
+            font-weight: bold;
+            cursor: pointer; 
+            transition: all 0.1s;
+            opacity: 0; pointer-events: none;
+            box-shadow: 0 4px 0 #1d4ed8; /* Darker blue shadow */
+            display: flex; align-items: center; justify-content: center;
+        }
+        #answer-helper-btn.visible { opacity: 1; pointer-events: auto; }
+        #answer-helper-btn:active { 
+            box-shadow: 0 0 0 #1d4ed8; 
+            transform: translateY(4px); 
+        }
+
+        /* Tips Grid */
+        #tips-container {
+            width: 100%; max-width: 320px; margin: 0 auto;
+        }
+        .tips-option {
+            background-color: white; border: 2px solid #e5e7eb;
+            border-radius: 12px; padding: 20px; font-size: 1.5rem;
+            font-weight: bold; color: #374151; cursor: pointer;
+            transition: all 0.1s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .tips-option:hover { background-color: #f9fafb; border-color: #d1d5db; }
+        .tips-option:active { transform: scale(0.98); }
+        .tips-option.wrong { background-color: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+        .tips-option.correct { background-color: #dcfce7; border-color: #22c55e; color: #15803d; }
+
+        /* Percent Selection */
+        .pct-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 8px; }
+        .pct-btn {
+            font-size: 0.75rem; padding: 6px 2px; border-radius: 6px; border: 1px solid #e5e7eb;
+            background: #fff; cursor: pointer; transition: 0.2s; font-weight: 500;
+        }
+        .pct-btn.selected { background: #3b82f6; color: white; border-color: #2563eb; }
+        .select-all-btn {
+            font-size: 0.75rem; font-weight: bold; color: #4b5563; cursor: pointer;
+            background-color: #e5e7eb; padding: 4px 12px; border-radius: 6px;
+            transition: 0.2s; border: 1px solid #d1d5db;
+        }
+        .select-all-btn:hover { background-color: #d1d5db; }
+
+        /* Settings Toggle Group (Square style) */
+        .toggle-group {
+            display: inline-flex;
+            background-color: #e5e7eb;
+            padding: 4px;
+            border-radius: 8px;
+        }
+        .toggle-btn-opt {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #4b5563;
+            border-radius: 6px;
+            transition: all 0.2s;
+            background: transparent;
+        }
+        .toggle-btn-opt:hover { background-color: rgba(255,255,255,0.5); }
+        .toggle-btn-opt.active {
+            background-color: white;
+            color: #1f2937;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body class="bg-gray-50 p-4 font-sans">
@@ -132,8 +230,6 @@
                     Visa Topplistor 🏅
                 </button>
             </div>
-            
-            <!-- Info Icon removed here -->
         </div>
 
         <!-- 0.5 TABLE TRAINING SETTINGS -->
@@ -181,7 +277,7 @@
                     <button class="operator-btn" data-op="minus">-</button>
                     <button class="operator-btn selected" data-op="multiply">×</button>
                     <button class="operator-btn" data-op="divide">÷</button>
-                    <button class="operator-btn text-base font-normal" data-op="power">X²</button>
+                    <button class="operator-btn text-base font-normal" data-op="power">X<span class="sup-exp-btn">2</span></button>
                     <button class="operator-btn" data-op="modulo">%</button>
                 </div>
             </div>
@@ -212,17 +308,18 @@
                 <div class="flex justify-center items-center space-x-2"><input type="number" id="sq-min" min="0" max="999" maxlength="3" value="1" class="range-input"><span class="text-gray-500">till</span><input type="number" id="sq-max" min="0" max="999" maxlength="3" value="12" class="range-input"></div>
             </div>
 
-            <div id="pct-interval-container" class="hidden mb-6 transition-opacity duration-300 text-sm">
-                <div class="flex justify-between space-x-2">
-                    <div class="flex-1 text-center">
-                        <h3 class="font-bold mb-1">Procent</h3>
-                        <div class="flex justify-center items-center space-x-1"><input type="number" id="pct-min" min="0" max="999" maxlength="3" value="1" class="range-input"><span class="text-gray-500">-</span><input type="number" id="pct-max" min="0" max="999" maxlength="3" value="100" class="range-input"></div>
-                    </div>
-                    <div class="flex-1 text-center">
-                        <h3 class="font-bold mb-1">Tal</h3>
-                        <div class="flex justify-center items-center space-x-1"><input type="number" id="num-min" min="0" max="999" maxlength="3" value="10" class="range-input"><span class="text-gray-500">-</span><input type="number" id="num-max" min="0" max="999" maxlength="3" value="500" class="range-input"></div>
-                    </div>
+            <div id="pct-interval-container" class="hidden mb-6 transition-opacity duration-300 text-sm text-center">
+                <div class="flex justify-between items-end mb-2 px-2">
+                    <h3 class="font-bold text-gray-700">Välj procenttal</h3>
+                    <button class="select-all-btn" onclick="toggleAll('pct')">Välj alla</button>
                 </div>
+                <div class="pct-grid" id="pct-selection-grid"></div>
+                
+                <div class="flex justify-between items-end mb-2 mt-4 px-2">
+                    <h3 class="font-bold text-gray-700">Välj tal</h3>
+                    <button class="select-all-btn" onclick="toggleAll('num')">Välj alla</button>
+                </div>
+                <div class="pct-grid" id="pct-num-selection-grid"></div>
             </div>
 
             <div id="practice-count-input" class="mb-6 flex flex-col items-center">
@@ -280,17 +377,35 @@
                 <div id="next-sym" class="op-col text-4xl font-bold text-gray-400 transition-opacity next-q-el"></div>
                 <div id="next-op2" class="val-col-l text-4xl font-bold text-gray-400 transition-opacity next-q-el"></div>
                 <div></div> <!-- Empty placeholder -->
+                
+                <!-- Row 3: Following (Preview Level 2) -->
+                <div id="fol-op1" class="val-col-r text-4xl font-bold text-gray-400 transition-opacity fol-q-el hidden"></div>
+                <div id="fol-sym" class="op-col text-4xl font-bold text-gray-400 transition-opacity fol-q-el hidden"></div>
+                <div id="fol-op2" class="val-col-l text-4xl font-bold text-gray-400 transition-opacity fol-q-el hidden"></div>
+                <div class="fol-q-el hidden"></div>
+
+                <!-- Row 4: Following 2 (Preview Level 3) -->
+                <div id="fol2-op1" class="val-col-r text-4xl font-bold text-gray-400 transition-opacity fol2-q-el hidden"></div>
+                <div id="fol2-sym" class="op-col text-4xl font-bold text-gray-400 transition-opacity fol2-q-el hidden"></div>
+                <div id="fol2-op2" class="val-col-l text-4xl font-bold text-gray-400 transition-opacity fol2-q-el hidden"></div>
+                <div class="fol2-q-el hidden"></div>
             </div>
 
             <p id="hint-text" class="text-sm text-gray-500 h-6 mb-6"></p>
 
-            <div id="input-area" class="flex justify-center items-center gap-3 min-h-[5rem]"></div>
+            <div id="input-area" class="relative flex justify-center items-center gap-3 min-h-[5rem]"></div>
             
             <div id="numpad-container" class="hidden grid grid-cols-3 gap-2 max-w-xs mx-auto mt-4">
                 <button class="numpad-btn" onclick="numpadPress(1)">1</button><button class="numpad-btn" onclick="numpadPress(2)">2</button><button class="numpad-btn" onclick="numpadPress(3)">3</button>
                 <button class="numpad-btn" onclick="numpadPress(4)">4</button><button class="numpad-btn" onclick="numpadPress(5)">5</button><button class="numpad-btn" onclick="numpadPress(6)">6</button>
                 <button class="numpad-btn" onclick="numpadPress(7)">7</button><button class="numpad-btn" onclick="numpadPress(8)">8</button><button class="numpad-btn" onclick="numpadPress(9)">9</button>
-                <button class="numpad-btn bg-red-50 text-red-600 border-red-200" onclick="numpadBackspace()">⌫</button><button class="numpad-btn" onclick="numpadPress(0)">0</button><div class="w-full"></div>
+                <button class="numpad-btn bg-red-50 text-red-600 border-red-200" onclick="numpadBackspace()">⌫</button><button class="numpad-btn" onclick="numpadPress(0)">0</button>
+                <button class="numpad-btn bg-blue-50 text-blue-600 border-blue-200" onclick="numpadPress(',')">,</button>
+            </div>
+            
+            <!-- TIPS GRID CONTAINER (Hidden by default) -->
+            <div id="tips-container" class="hidden grid grid-cols-2 gap-3 mt-4">
+                <!-- JS will populate -->
             </div>
         </div>
 
@@ -334,7 +449,7 @@
             <div class="bg-white border border-gray-200 rounded-lg shadow-inner max-h-[200px] overflow-y-auto w-full max-w-md mx-auto mb-6 custom-scroll">
                 <table class="w-full text-sm text-left score-table"><tbody id="tt-detail-list"></tbody></table>
             </div>
-
+            
             <div class="space-y-3 flex flex-col items-center w-full">
                 <button id="tt-practice-hardest-btn" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg w-full max-w-xs transition shadow-md flex flex-col items-center"><span>Öva på de svåraste 🔥</span><span class="text-[10px] font-normal opacity-90 mt-1">Du övar på den svåraste fjärdedelen av uppgifterna.</span></button>
                 <button id="tt-practice-worst-table-btn" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg w-full max-w-xs transition shadow-md hidden">Öva X:ans tabell</button>
@@ -381,7 +496,7 @@
             <div class="bg-white rounded-xl shadow-xl p-6 w-80 max-w-full mx-4">
                 <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">Inställningar ⚙️</h2>
                 
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between mb-4">
                     <span class="text-gray-700 font-medium">Nedräkning (3,2,1)</span>
                     <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
                         <input type="checkbox" name="toggle" id="toggle-countdown" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked onchange="updateSettings()"/>
@@ -389,28 +504,45 @@
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between mb-6">
-                    <span class="text-gray-700 font-medium">Visa nästa fråga</span>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-gray-700 font-medium">Visa sifferpanel</span>
                     <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                        <input type="checkbox" name="toggle" id="toggle-nextq" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked onchange="updateSettings()"/>
-                        <label for="toggle-nextq" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        <input type="checkbox" name="toggle" id="toggle-numpad" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" checked onchange="updateSettings()"/>
+                        <label for="toggle-numpad" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-between mb-6">
-                    <span class="text-gray-700 font-medium">Snabb omstart med "R"</span>
+                    <span class="text-gray-700 font-medium">Omstart med Ctrl + R</span>
                     <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
                         <input type="checkbox" name="toggle" id="toggle-restart" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" onchange="updateSettings()"/>
                         <label for="toggle-restart" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
                     </div>
                 </div>
 
-                 <div class="flex items-center justify-between mb-8">
-                    <span class="text-gray-700 font-medium">Visa sifferpanel</span>
-                    <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                        <input type="checkbox" name="toggle" id="toggle-numpad" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" onchange="updateSettings()"/>
-                        <label for="toggle-numpad" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                <div class="mb-6 text-center">
+                    <div class="mb-2">
+                        <span class="text-gray-700 font-medium">Visa "Tips" knapp efter</span>
                     </div>
+                    <div class="bg-gray-200 p-1 rounded-lg inline-flex toggle-group">
+                        <button id="ansdelay-5" onclick="setAnswerDelay(5)" class="toggle-btn-opt">5 s</button>
+                        <button id="ansdelay-7" onclick="setAnswerDelay(7)" class="toggle-btn-opt">7 s</button>
+                        <button id="ansdelay-10" onclick="setAnswerDelay(10)" class="toggle-btn-opt">10 s</button>
+                        <button id="ansdelay-15" onclick="setAnswerDelay(15)" class="toggle-btn-opt">15 s</button>
+                    </div>
+                </div>
+
+                <div class="mb-8 text-center">
+                    <div class="mb-2">
+                        <span class="text-gray-700 font-medium">Visa nästa fråga</span>
+                    </div>
+                    <div class="bg-gray-200 p-1 rounded-lg inline-flex toggle-group">
+                        <button id="nextq-0" onclick="setNextQLevel(0)" class="toggle-btn-opt">0</button>
+                        <button id="nextq-1" onclick="setNextQLevel(1)" class="toggle-btn-opt">1</button>
+                        <button id="nextq-2" onclick="setNextQLevel(2)" class="toggle-btn-opt">2</button>
+                        <button id="nextq-3" onclick="setNextQLevel(3)" class="toggle-btn-opt">3</button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2 italic text-center" id="nextq-info">Inget visas.</p>
                 </div>
 
                 <button onclick="$('settings-modal').classList.add('hidden')" class="w-full bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-900 transition">Klar</button>
@@ -432,6 +564,7 @@
                     <p class="mt-2"><strong>Under spel:</strong></p>
                     <ul class="list-disc pl-4">
                         <li><strong>ESC</strong> - Avbryt spelet och gå till menyn</li>
+                        <li><strong>Ctrl + R</strong> - Starta om spelet (om aktiverat i inställningar)</li>
                     </ul>
                 </div>
                 <button onclick="$('info-modal').classList.add('hidden')" class="bg-gray-800 text-white font-bold py-2 rounded-lg hover:bg-gray-900 transition w-full">Stäng</button>
@@ -443,14 +576,14 @@
              <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Din Statistik 📊</h2>
              
              <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-center shadow-sm">
-                 <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Totalt antal lösta uppgifter</p>
+                 <p class="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Totalt antal lösta uppgifter (Endast 1-10)</p>
                  <p id="stats-total-count" class="text-4xl font-extrabold text-blue-600">0</p>
              </div>
 
-             <h3 class="text-lg font-bold mb-4 text-gray-700">Övade tabeller (0-10)</h3>
+             <h3 class="text-lg font-bold mb-4 text-gray-700">Övade tabeller (1-10)</h3>
              <div id="stats-bars-container" class="space-y-3 mb-8"></div>
              
-             <p class="text-xs text-gray-400 italic text-center mb-6 max-w-xs mx-auto">* Antalet per tabell matchar inte alltid totalen eftersom varje uppgift består av två tal.</p>
+             <p class="text-xs text-gray-400 italic text-center mb-6 max-w-xs mx-auto">* Statistiken räknar endast uppgifter där båda talen är mellan 1-10.</p>
 
              <div class="text-center">
                  <button onclick="showView('start-menu-view')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-8 rounded-lg transition">Tillbaka till menyn</button>
@@ -495,25 +628,30 @@
         let questionStartTime = 0; 
         let gameMode = 'practice';
         let timerInterval;
+        let answerTimer;
         let score = 0;
         let pendingRecord = null;
         let questionHistory = []; 
         let currentQ = null;
         let nextQObj = null;
+        let followingQObj = null;
+        let following2QObj = null;
         let activeInputId = null; 
         
+        // Defaults
         let enableCountdown = true;
-        let enableQuickRestart = false;
-        let showNextQuestion = true;
-        let showNumpad = false;
+        let enableQuickRestart = false; // "Omstart med Ctrl+R" - Standard: Av
+        let nextQLevel = 0; // 0=Av, 1=Nästa, 2=Nästa+Följande, 3=+ en till (Standard: 0)
+        let showNumpad = true; // Standard: På
+        let answerDelay = 7; // Sekunder
 
         const ops = {
             plus: { sym: '+', calc: (a,b) => a+b },
             minus: { sym: '-', calc: (a,b) => a-b },
             multiply: { sym: '×', calc: (a,b) => a*b },
             divide: { sym: '÷' }, 
-            power: { sym: '2' }, 
-            modulo: { sym: '% av' }
+            power: { sym: 'power' }, // Special rendering
+            modulo: { sym: 'modulo' } // Special rendering
         };
 
         const randInt = (min, max) => {
@@ -528,7 +666,7 @@
         }
 
         function exportData() {
-            const data = { toplist: localStorage.getItem('mattespel_toplist'), stats: localStorage.getItem('mattespel_stats'), settings: { enableCountdown, enableQuickRestart, showNextQuestion, showNumpad } };
+            const data = { toplist: localStorage.getItem('mattespel_toplist'), stats: localStorage.getItem('mattespel_stats'), settings: { enableCountdown, enableQuickRestart, nextQLevel, showNumpad, answerDelay } };
             const json = JSON.stringify(data); const checksum = generateChecksum(json); const encoded = btoa(encodeURIComponent(checksum + "|" + json));
             const blob = new Blob([encoded], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a');
             a.href = url; a.download = `mattespel_data_${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url);
@@ -549,8 +687,10 @@
                     if (data.stats) localStorage.setItem('mattespel_stats', data.stats);
                     
                     if (data.settings) { 
-                        enableCountdown = data.settings.enableCountdown; enableQuickRestart = data.settings.enableQuickRestart; showNextQuestion = data.settings.showNextQuestion; showNumpad = data.settings.showNumpad;
-                        $('toggle-countdown').checked = enableCountdown; $('toggle-restart').checked = enableQuickRestart; $('toggle-nextq').checked = showNextQuestion; $('toggle-numpad').checked = showNumpad;
+                        enableCountdown = data.settings.enableCountdown; enableQuickRestart = data.settings.enableQuickRestart; nextQLevel = data.settings.nextQLevel || 0; showNumpad = data.settings.showNumpad;
+                        answerDelay = data.settings.answerDelay || 7;
+                        $('toggle-countdown').checked = enableCountdown; $('toggle-restart').checked = enableQuickRestart; setNextQLevel(nextQLevel); $('toggle-numpad').checked = showNumpad;
+                        setAnswerDelay(answerDelay);
                     }
                     alert("Data laddad! 🎉"); $('save-load-modal').classList.add('hidden');
                 } catch (err) { alert("Kunde inte ladda filen. Den kan vara skadad eller manipulerad."); } input.value = ''; 
@@ -561,8 +701,12 @@
         function saveStats(stats) { localStorage.setItem('mattespel_stats', JSON.stringify(stats)); }
 
         function updateStats(n1, n2, op) {
-            if (op !== 'multiply') return; const stats = getStats(); stats.total++;
-            const countTable = (n) => { if (n >= 0 && n <= 10) stats.tables[n] = (stats.tables[n] || 0) + 1; };
+            // New logic: Only count table 1-10, exclude 0. Only when BOTH numbers are 1-10.
+            if (op !== 'multiply') return;
+            if (n1 < 1 || n1 > 10 || n2 < 1 || n2 > 10) return;
+
+            const stats = getStats(); stats.total++;
+            const countTable = (n) => { if (n >= 1 && n <= 10) stats.tables[n] = (stats.tables[n] || 0) + 1; };
             countTable(n1); if (n1 !== n2) countTable(n2); saveStats(stats);
         }
         
@@ -582,22 +726,77 @@
         
         function showStatsView() {
             closeAllModals(); const stats = getStats(); $('stats-total-count').textContent = stats.total; const container = $('stats-bars-container'); container.innerHTML = ''; const maxVal = Math.max(...stats.tables, 1);
-            stats.tables.forEach((count, num) => {
+            // Only show 1-10
+            for(let num=1; num<=10; num++) {
+                const count = stats.tables[num] || 0;
                 const percent = (count / maxVal) * 100; const barWidth = Math.max(percent, 1);
                 container.innerHTML += `<div class="flex items-center"><div class="w-8 text-sm font-bold text-gray-600 text-right mr-3">${num}</div><div class="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden relative"><div class="h-full bg-blue-500 rounded-full" style="width: ${barWidth}%"></div></div><div class="w-10 text-xs text-gray-500 text-left ml-3">${count}</div></div>`;
-            });
+            }
             showView('stats-view');
         }
 
-        function showSettings() { closeAllModals(); $('settings-modal').classList.remove('hidden'); }
+        function showSettings() { closeAllModals(); $('settings-modal').classList.remove('hidden'); updateSettings(); }
         function showInfoModal() { closeAllModals(); $('info-modal').classList.remove('hidden'); }
         function showSaveLoadModal() { closeAllModals(); $('save-load-modal').classList.remove('hidden'); }
         
         function updateSettings() {
-            enableCountdown = $('toggle-countdown').checked; enableQuickRestart = $('toggle-restart').checked; showNextQuestion = $('toggle-nextq').checked; showNumpad = $('toggle-numpad').checked;
+            enableCountdown = $('toggle-countdown').checked; enableQuickRestart = $('toggle-restart').checked; showNumpad = $('toggle-numpad').checked;
+            
+            // Next Q logic handled by setNextQLevel
+        }
+        
+        function setAnswerDelay(sec) {
+            answerDelay = sec;
+            $$('.toggle-btn-opt').forEach(el => {
+                if(el.id.startsWith('ansdelay')) el.classList.remove('active');
+            });
+            $(`ansdelay-${sec}`).classList.add('active');
+        }
+
+        function setNextQLevel(lvl) {
+            nextQLevel = lvl;
+            $$('.toggle-btn-opt').forEach(el => {
+                if(el.id.startsWith('nextq')) el.classList.remove('active');
+            });
+            $(`nextq-${lvl}`).classList.add('active');
+            
+            const info = $('nextq-info');
+            if (lvl === 0) info.textContent = "Inget visas.";
+            else if (lvl === 1) info.textContent = "Visar nästa uppgift.";
+            else if (lvl === 2) info.textContent = "Visar två kommande uppgifter (endast Tabell/Tävling).";
+            else if (lvl === 3) info.textContent = "Visar tre kommande uppgifter (endast Tabell/Tävling).";
+            
+            updatePreviewVisibility();
+        }
+
+        function updatePreviewVisibility() {
             const nextEls = $$('.next-q-el');
-            if (!showNextQuestion) nextEls.forEach(el => el.classList.add('opacity-0'));
-            else nextEls.forEach(el => el.classList.remove('opacity-0'));
+            const folEls = $$('.fol-q-el');
+            const fol2Els = $$('.fol2-q-el');
+            
+            // Reset
+            nextEls.forEach(el => el.classList.add('opacity-0'));
+            folEls.forEach(el => el.classList.add('hidden'));
+            fol2Els.forEach(el => el.classList.add('hidden'));
+
+            if (nextQLevel >= 1) {
+                nextEls.forEach(el => el.classList.remove('opacity-0'));
+            }
+            
+            if (gameMode === 'table-training' || gameMode.startsWith('compete') || gameMode === 'practice-table-fixed') {
+                if (nextQLevel >= 2) {
+                    folEls.forEach(el => {
+                        el.classList.remove('hidden');
+                        el.classList.remove('opacity-0');
+                    });
+                }
+                if (nextQLevel >= 3) {
+                    fol2Els.forEach(el => {
+                        el.classList.remove('hidden');
+                        el.classList.remove('opacity-0');
+                    });
+                }
+            }
         }
 
         function initTableButtons(containerId) {
@@ -608,6 +807,34 @@
                 btn.onclick = () => { btn.classList.toggle('selected'); if (containerId === 'specific-tables-selection') updateBtn(); };
                 container.appendChild(btn);
             }
+        }
+        
+        function initPctSelection() {
+            const grid = $('pct-selection-grid'); grid.innerHTML = '';
+            const pcts = [1,2,3,4,5,6,7,8,9,10,20,30,40,50,60,70,80,90,100];
+            pcts.forEach(p => {
+                const btn = document.createElement('div'); btn.className = 'pct-btn'; btn.textContent = p + ' %'; btn.dataset.val = p;
+                btn.onclick = () => { btn.classList.toggle('selected'); };
+                grid.appendChild(btn);
+            });
+
+            const numGrid = $('pct-num-selection-grid'); numGrid.innerHTML = '';
+            const nums = [10,20,30,40,50,60,70,80,90,100,200,300,400,500,600,700,800,900];
+            nums.forEach(n => {
+                const btn = document.createElement('div'); btn.className = 'pct-btn'; btn.textContent = n; btn.dataset.val = n;
+                btn.onclick = () => { btn.classList.toggle('selected'); };
+                numGrid.appendChild(btn);
+            });
+        }
+        
+        function toggleAll(type) {
+            const selector = type === 'pct' ? '#pct-selection-grid .pct-btn' : '#pct-num-selection-grid .pct-btn';
+            const btns = $$(selector);
+            const allSelected = Array.from(btns).every(b => b.classList.contains('selected'));
+            btns.forEach(b => {
+                if (allSelected) b.classList.remove('selected');
+                else b.classList.add('selected');
+            });
         }
         
         let practiceModeType = 'count';
@@ -648,6 +875,7 @@
             const isChecked = $('use-specific-tables').checked;
             if(isChecked) $('specific-tables-selection').classList.remove('hidden');
             else $('specific-tables-selection').classList.add('hidden');
+            toggleIntervals(); // Re-check intervals visibility
             updateBtn();
         }
 
@@ -657,9 +885,17 @@
             const hasStandard = ops.some(op => standardOps.includes(op));
             const hasPower = ops.includes('power');
             const hasModulo = ops.includes('modulo');
+            const onlyMultiply = ops.length === 1 && ops[0] === 'multiply';
+            const specificTable = $('use-specific-tables').checked;
 
-            if (hasStandard || (!hasPower && !hasModulo)) $('interval-container').classList.remove('hidden');
-            else $('interval-container').classList.add('hidden');
+            // Hide standard intervals if we are doing specific multiplication table practice
+            if (onlyMultiply && specificTable) {
+                $('interval-container').classList.add('hidden');
+            } else if (hasStandard || (!hasPower && !hasModulo)) {
+                $('interval-container').classList.remove('hidden');
+            } else {
+                $('interval-container').classList.add('hidden');
+            }
 
             if (hasPower) $('sq-interval-container').classList.remove('hidden');
             else $('sq-interval-container').classList.add('hidden');
@@ -668,11 +904,11 @@
             else $('pct-interval-container').classList.add('hidden');
             
             // Table practice wrapper visibility
-            if (ops.includes('multiply') && ops.length === 1) $('table-practice-wrapper').classList.remove('hidden');
+            if (onlyMultiply) $('table-practice-wrapper').classList.remove('hidden');
             else {
                 $('table-practice-wrapper').classList.add('hidden');
                 $('use-specific-tables').checked = false;
-                toggleTableMode();
+                if($('specific-tables-selection')) $('specific-tables-selection').classList.add('hidden');
             }
             updateBtn();
         }
@@ -690,23 +926,122 @@
         }
 
         function nextQ() {
+            clearTimeout(answerTimer);
+            const btn = $('answer-helper-btn');
+            if (btn) {
+                btn.classList.remove('visible');
+                btn.textContent = "Tips"; // Reset text
+            }
+            
+            // Reset Tips Mode if active
+            $('tips-container').classList.add('hidden');
+            $('numpad-container').classList.add('hidden'); // Logic below decides visibility
+            $('input-area').classList.remove('hidden');
+
             if (settings.count !== Infinity && currIdx >= settings.count) { endGame(); return; }
             
             if (settings.count === Infinity) {
-                if (!questions[currIdx]) addRandomQuestion();
-                if (!questions[currIdx + 1]) addRandomQuestion();
+                while (questions.length <= currIdx + 3) addRandomQuestion();
             }
             
             currentQ = questions[currIdx];
             nextQObj = (settings.count !== Infinity && currIdx + 1 >= settings.count) ? null : questions[currIdx + 1];
+            followingQObj = (settings.count !== Infinity && currIdx + 2 >= settings.count) ? null : questions[currIdx + 2];
+            following2QObj = (settings.count !== Infinity && currIdx + 3 >= settings.count) ? null : questions[currIdx + 3];
+            
             questionStartTime = performance.now();
             if (settings.count === Infinity) $('q-counter').textContent = `Poäng: ${score}`;
             else $('q-counter').textContent = `${currIdx + 1} av ${settings.count}`;
             
             renderQuestion(currentQ);
-            renderNextPreview(nextQObj);
+            renderNextPreview(nextQObj, followingQObj, following2QObj);
             updateSettings(); 
-            const numpad = $('numpad-container'); if (showNumpad) numpad.classList.remove('hidden'); else numpad.classList.add('hidden');
+            updatePreviewVisibility(); // Ensure levels respected
+            
+            // Show Numpad if set (and not currently in tips mode which is hidden anyway)
+            if (showNumpad) $('numpad-container').classList.remove('hidden');
+
+            // Answer helper logic (Only in Table training or Specific table practice)
+            if (gameMode === 'table-training' || gameMode === 'practice-table-fixed') {
+                answerTimer = setTimeout(() => {
+                    const btn = $('answer-helper-btn');
+                    if(btn) btn.classList.add('visible');
+                }, answerDelay * 1000);
+            }
+        }
+
+        function showTips() {
+            // Hide input area and numpad
+            $('input-area').classList.add('hidden');
+            $('numpad-container').classList.add('hidden');
+            
+            const container = $('tips-container');
+            container.innerHTML = '';
+            container.classList.remove('hidden');
+            
+            // Generate options
+            let options = [];
+            const correctAns = currentQ.ans;
+            
+            options.push(correctAns);
+            
+            // Generate distractors based on type
+            while(options.length < 4) {
+                let dist;
+                const r = Math.random();
+                
+                if (currentQ.op === 'multiply') {
+                    // Smart distractors for multiplication table
+                    if (r < 0.33) dist = correctAns + currentQ.n1; // e.g. 3x7=21, dist=24
+                    else if (r < 0.66) dist = correctAns - currentQ.n1;
+                    else dist = correctAns + (Math.random() < 0.5 ? 1 : -1) * randInt(1, 5);
+                } else {
+                    // General distractor logic
+                    const offset = randInt(1, 5) * (Math.random() < 0.5 ? 1 : -1);
+                    dist = correctAns + offset;
+                }
+                
+                // Ensure unique and positive (if answer is positive)
+                if (dist !== correctAns && !options.includes(dist) && dist >= 0) {
+                    options.push(dist);
+                }
+            }
+            
+            // Shuffle
+            options.sort(() => Math.random() - 0.5);
+            
+            // Create Buttons
+            options.forEach(opt => {
+                const btn = document.createElement('div');
+                btn.className = 'tips-option';
+                
+                // Format for display (handle modulo/decimals)
+                if (typeof opt === 'number' && !Number.isInteger(opt)) btn.textContent = opt.toString().replace('.', ',');
+                else btn.textContent = opt;
+                
+                btn.onclick = () => {
+                    if (opt === correctAns) {
+                        btn.className += ' correct';
+                        // Correct logic
+                        if (currentQ.op === 'multiply') updateStats(currentQ.n1, currentQ.n2, currentQ.op);
+                        const timeTaken = (performance.now() - questionStartTime) / 1000;
+                        let qt = ""; 
+                        if (currentQ.op === 'power') qt = `${currentQ.n1}²`; 
+                        else if (currentQ.op === 'modulo') qt = `${currentQ.n1}% av ${currentQ.n2}`; 
+                        else qt = `${currentQ.n1} ${ops[currentQ.op].sym} ${currentQ.n2}`;
+                        
+                        questionHistory.push({ n1: currentQ.n1, n2: currentQ.n2, time: timeTaken, qText: qt });
+                        score++; currIdx++; 
+                        
+                        setTimeout(() => { 
+                            nextQ(); 
+                        }, 500);
+                    } else {
+                        btn.className += ' wrong';
+                    }
+                };
+                container.appendChild(btn);
+            });
         }
         
         function addRandomQuestion() {
@@ -723,7 +1058,10 @@
 
         function genQWrapper(op) {
              if (op === 'power') return genQ(op, settings.sqR, null);
-             if (op === 'modulo') return genQ(op, settings.pctR, settings.numR);
+             if (op === 'modulo') {
+                 // Modulo specific override
+                 return genQ(op, null, null);
+             }
              if (op === 'multiply' && settings.specificTables && settings.specificTables.length > 0) return genQ(op, null, null);
              return genQ(op, settings.lR, settings.rR);
         }
@@ -737,43 +1075,105 @@
                 ans = n1 * n2; return { n1, n2, op, ans };
             }
 
+            if (op === 'modulo') {
+                const pcts = settings.pcts && settings.pcts.length > 0 ? settings.pcts : [10,20,50];
+                const nums = settings.pctNums && settings.pctNums.length > 0 ? settings.pctNums : [100,200];
+                n1 = pcts[Math.floor(Math.random() * pcts.length)];
+                n2 = nums[Math.floor(Math.random() * nums.length)];
+                // Exact calculation
+                ans = (n1 * n2) / 100;
+                // If it ends up floating, javascript handles it. 
+                // e.g. 5% of 30 = 1.5
+                return { n1, n2, op, ans };
+            }
+
             const min1 = r1 ? Math.max(0, Math.min(r1.min, r1.max)) : 0; const max1 = r1 ? Math.max(0, Math.max(r1.min, r1.max)) : 0;
             const min2 = r2 ? Math.max(0, Math.min(r2.min, r2.max)) : 0; const max2 = r2 ? Math.max(0, Math.max(r2.min, r2.max)) : 0;
 
             if (op === 'divide') {
                 n1 = randInt(min1, max1); n2 = randInt(Math.max(1, min2), max2); const q = Math.floor(n1 / n2); const r = n1 % n2; ans = (r === 0) ? q : { q: q, r: r };
             } else if (op === 'power') { n1 = randInt(min1, max1); n2 = null; ans = n1 * n1;
-            } else if (op === 'modulo') { n1 = randInt(min1, max1); n2 = randInt(min2, max2); ans = Math.round((n1 / 100) * n2);
             } else { n1 = randInt(min1, max1); n2 = randInt(min2, max2); ans = ops[op].calc(n1, n2); }
             return { n1, n2, op, ans };
         }
 
         function renderQuestion(q) {
             $('op1').textContent = q.n1; 
-            const sym = $('op-sym'); sym.textContent = ops[q.op].sym; 
-            $('hint-text').textContent = ''; 
+            const sym = $('op-sym'); 
             
             // Reset styles
             sym.className = "op-col text-5xl md:text-6xl font-extrabold text-gray-900";
+            $('op1').className = "val-col-r text-5xl md:text-6xl font-extrabold text-gray-900";
             
             if (q.op === 'power') {
-                sym.className += ' text-4xl transform -translate-y-4 font-bold'; 
-            } else if (q.op === 'modulo') {
-                $('hint-text').textContent = 'Avrunda till närmaste heltal.';
-                sym.className = "text-center w-auto px-2 text-3xl font-extrabold text-gray-900 whitespace-nowrap";
+                sym.innerHTML = ''; // Clear text
+                // Use a span with negative top margin to push it up
+                // Increasing the negative top value to really push it up
+                sym.innerHTML = '<span class="text-4xl" style="position:relative; top: -30px; left: -10px;">2</span>';
+                sym.className = "op-col font-extrabold text-gray-900 w-4"; // Make it narrow
+                $('op1').textContent = q.n1;
+                
+            } else {
+                sym.textContent = ops[q.op].sym; 
             }
             
-            $('op2').textContent = q.n2 !== null ? q.n2 : ''; 
+            if (q.op === 'modulo') {
+                $('hint-text').textContent = '';
+                // % symbol big, av small
+                sym.innerHTML = '<span class="text-5xl md:text-6xl font-extrabold">%</span> <span class="text-2xl font-normal text-gray-500 ml-2">av</span>';
+                sym.className = "text-center w-auto px-2 font-extrabold text-gray-900 whitespace-nowrap";
+            } else {
+                $('hint-text').textContent = '';
+            }
+            
+            $('op2').textContent = (q.n2 !== null && q.op !== 'power') ? q.n2 : ''; 
             
             const area = $('input-area'); area.innerHTML = ''; 
+            
+            // Create a wrapper to hold inputs and ensure the button positions relative to THEM, not the full width container
+            const wrapper = document.createElement('div');
+            wrapper.className = 'relative inline-flex items-center justify-center gap-2'; // inline-flex hugs content
+            
             if (typeof q.ans === 'object') {
                 const i1 = createInput('q-input', 'w-24'); const span = document.createElement('span'); span.textContent = 'rest'; span.className = 'text-xl font-medium text-gray-500 pb-1'; const i2 = createInput('r-input', 'w-24');
-                i1.oninput = (e) => { if (parseInt(e.target.value) === q.ans.q) i2.focus(); checkAns(); }; i2.oninput = checkAns; i1.onkeyup = (e) => { if(e.key === 'Enter') i2.focus(); }; i2.onkeyup = (e) => { if(e.key === 'Enter') checkAns(); }; area.append(i1, span, i2); i1.focus(); activeInputId = 'q-input';
-            } else { const i1 = createInput('std-input', 'w-40'); i1.oninput = checkAns; i1.onkeyup = (e) => { if(e.key === 'Enter') checkAns(); }; area.append(i1); i1.focus(); activeInputId='std-input'; }
+                i1.oninput = (e) => { if (parseInt(e.target.value) === q.ans.q) i2.focus(); checkAns(); }; i2.oninput = checkAns; i1.onkeyup = (e) => { if(e.key === 'Enter') i2.focus(); }; i2.onkeyup = (e) => { if(e.key === 'Enter') checkAns(); }; 
+                wrapper.append(i1, span, i2); 
+                // Set focus logic after append
+                setTimeout(() => i1.focus(), 0); 
+                activeInputId = 'q-input';
+            } else { 
+                const i1 = createInput('std-input', 'w-40'); 
+                i1.type = "text"; 
+                i1.setAttribute('inputmode', 'decimal'); 
+                i1.oninput = checkAns; i1.onkeyup = (e) => { if(e.key === 'Enter') checkAns(); }; 
+                wrapper.append(i1); 
+                setTimeout(() => i1.focus(), 0);
+                activeInputId='std-input'; 
+            }
+            
+            // Create dynamic answer button container
+            const btnContainer = document.createElement('div');
+            btnContainer.id = 'tips-btn-wrapper';
+            
+            const btn = document.createElement('button');
+            btn.id = 'answer-helper-btn';
+            btn.textContent = 'Tips';
+            btn.onclick = showTips;
+            
+            btnContainer.appendChild(btn);
+            wrapper.appendChild(btnContainer); // Append to wrapper
+            
+            area.appendChild(wrapper); // Append wrapper to main area
         }
 
-        function renderNextPreview(q) {
-            const op1 = $('next-op1'); const sym = $('next-sym'); const op2 = $('next-op2');
+        function renderNextPreview(q, fq, fq2) {
+            renderSinglePreview(q, 'next');
+            renderSinglePreview(fq, 'fol');
+            renderSinglePreview(fq2, 'fol2');
+        }
+
+        function renderSinglePreview(q, prefix) {
+            const op1 = $(`${prefix}-op1`); const sym = $(`${prefix}-sym`); const op2 = $(`${prefix}-op2`);
             
             if (!q) { 
                 op1.textContent = ""; sym.textContent = ""; op2.textContent = ""; 
@@ -781,18 +1181,21 @@
             }
             
             op1.textContent = q.n1;
-            sym.textContent = ops[q.op].sym;
             
             // Reset preview styles
-            sym.className = "op-col text-4xl font-bold text-gray-400 transition-opacity next-q-el";
+            sym.className = `op-col text-4xl font-bold text-gray-400 transition-opacity ${prefix}-q-el`;
             
             if (q.op === 'power') {
-                sym.className += ' text-2xl transform -translate-y-2';
+                // Raise the preview exponent as well
+                sym.innerHTML = '<span class="text-2xl" style="position:relative; top: -15px; left: -5px;">2</span>';
+                sym.className = `op-col w-4 font-bold text-gray-400 transition-opacity ${prefix}-q-el`;
                 op2.textContent = "";
             } else if (q.op === 'modulo') {
-                sym.className = "text-center w-auto px-2 text-xl font-bold text-gray-300 whitespace-nowrap next-q-el"; // Behåller ljusare för text
+                sym.textContent = '% av';
+                sym.className = `text-center w-auto px-2 text-xl font-bold text-gray-300 whitespace-nowrap ${prefix}-q-el`; 
                 op2.textContent = q.n2;
             } else {
+                sym.textContent = ops[q.op].sym;
                 op2.textContent = q.n2;
             }
         }
@@ -802,12 +1205,23 @@
         function checkAns() {
             let isCorrect = false;
             if (typeof currentQ.ans === 'object') { const qVal = parseInt($('q-input')?.value); const rVal = parseInt($('r-input')?.value); if (!isNaN(qVal) && !isNaN(rVal) && qVal === currentQ.ans.q && rVal === currentQ.ans.r) isCorrect = true; } 
-            else { const val = parseInt($('std-input')?.value); if (!isNaN(val) && val === currentQ.ans) isCorrect = true; }
+            else { 
+                let valStr = $('std-input')?.value || "";
+                valStr = valStr.replace(',', '.'); // Handle comma
+                const val = parseFloat(valStr); 
+                
+                // Precision check for floats
+                if (!isNaN(val) && Math.abs(val - currentQ.ans) < 0.000001) isCorrect = true; 
+            }
 
             if (isCorrect) { 
                 if (currentQ.op === 'multiply') updateStats(currentQ.n1, currentQ.n2, currentQ.op);
                 const timeTaken = (performance.now() - questionStartTime) / 1000;
-                let qt = ""; if (currentQ.op === 'power') qt = `${currentQ.n1}²`; else if (currentQ.op === 'modulo') qt = `${currentQ.n1}% av ${currentQ.n2}`; else qt = `${currentQ.n1} ${ops[currentQ.op].sym} ${currentQ.n2}`;
+                let qt = ""; 
+                if (currentQ.op === 'power') qt = `${currentQ.n1}²`; 
+                else if (currentQ.op === 'modulo') qt = `${currentQ.n1}% av ${currentQ.n2}`; 
+                else qt = `${currentQ.n1} ${ops[currentQ.op].sym} ${currentQ.n2}`;
+                
                 questionHistory.push({ n1: currentQ.n1, n2: currentQ.n2, time: timeTaken, qText: qt });
                 score++; currIdx++; setTimeout(() => { nextQ(); }, 10);
             }
@@ -815,6 +1229,7 @@
 
         function endGame() {
             clearInterval(timerInterval);
+            clearTimeout(answerTimer);
             if (gameMode === 'table-training') { showTableTrainingResults(); return; }
             if (gameMode.startsWith('compete')) {
                 const cat = gameMode === 'compete-time' ? 'time' : settings.competeCategory;
@@ -911,9 +1326,12 @@
             const selectedBtns = Array.from($$('#operator-container .selected'));
             let selOps = selectedBtns.map(b => b.dataset.op).filter(op => ops[op] || op === 'divide' || op === 'power' || op === 'modulo');
             const lMin = parseInt($('left-min').value), lMax = parseInt($('left-max').value); const rMin = parseInt($('right-min').value), rMax = parseInt($('right-max').value);
-            const sqMin = parseInt($('sq-min').value), sqMax = parseInt($('sq-max').value); const pMin = parseInt($('pct-min').value), pMax = parseInt($('pct-max').value);
-            const numMin = parseInt($('num-min').value), numMax = parseInt($('num-max').value); const qCount = parseInt($('q-count').value);
+            const sqMin = parseInt($('sq-min').value), sqMax = parseInt($('sq-max').value); const qCount = parseInt($('q-count').value);
             
+            // Percentage selections
+            const selectedPcts = Array.from($$('#pct-selection-grid .pct-btn.selected')).map(el => parseInt(el.dataset.val));
+            const selectedPctNums = Array.from($$('#pct-num-selection-grid .pct-btn.selected')).map(el => parseInt(el.dataset.val));
+
             if (!selOps.length) return alert('Vänligen välj minst ett giltigt räknesätt!'); if ($('play-btn').disabled) return;
             
             const useSpecific = $('use-specific-tables').checked && !$('table-practice-wrapper').classList.contains('hidden');
@@ -923,7 +1341,8 @@
             const timeVal = parseInt($('practice-time-select').value) || 3;
             
             settings = { 
-                ops: selOps, lR: {min: lMin, max: lMax}, rR: {min: rMin, max: rMax}, sqR: {min: sqMin, max: sqMax}, pctR: {min: pMin, max: pMax}, numR: {min: numMin, max: numMax},
+                ops: selOps, lR: {min: lMin, max: lMax}, rR: {min: rMin, max: rMax}, sqR: {min: sqMin, max: sqMax},
+                pcts: selectedPcts, pctNums: selectedPctNums,
                 count: qCount, specificTables: specificTables, practiceModeType: pMode
             };
 
@@ -1030,16 +1449,25 @@
         $('play-btn').onclick=startPractice; $('again-btn').onclick=replay; $('toplist-again-btn').onclick=replay;
 
         document.onkeydown = e => {
-            if (e.key === 'Escape') { clearInterval(timerInterval); if (!$('start-menu-view').classList.contains('hidden')) return; showView('start-menu-view'); return; }
+            if (e.key === 'Escape') { clearInterval(timerInterval); clearTimeout(answerTimer); if (!$('start-menu-view').classList.contains('hidden')) return; showView('start-menu-view'); return; }
+            if (enableQuickRestart && e.ctrlKey && e.key === 'r') { e.preventDefault(); replay(); return; }
+            
             if (!$('start-menu-view').classList.contains('hidden') && ['3','5','7','0'].includes(e.key)) { e.preventDefault(); startTableTraining(e.key==='0'?10:parseInt(e.key)); }
             if ((e.key===' '||e.key==='Enter') && (!$('results-view').classList.contains('hidden') || !$('toplist-view').classList.contains('hidden') || !$('table-training-results-view').classList.contains('hidden'))) { e.preventDefault(); replay(); }
             if (!$('record-view').classList.contains('hidden') && e.key === 'Enter') $('save-record-btn').click();
         };
 
         initTableButtons('specific-tables-selection'); initTableButtons('training-tables-selection');
+        initPctSelection();
         showView('start-menu-view'); updateBtn(); toggleIntervals();
+        
+        // Default settings init
+        $('toggle-countdown').checked = true;
+        $('toggle-numpad').checked = true;
+        $('toggle-restart').checked = false;
+        setNextQLevel(0);
+        setAnswerDelay(7);
+        updateSettings();
     </script>
 </body>
 </html>
-```
-
