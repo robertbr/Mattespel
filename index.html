@@ -513,7 +513,7 @@
                 </div>
 
                 <div class="flex items-center justify-between mb-6">
-                    <span class="text-gray-700 font-medium">Omstart med Ctrl + R</span>
+                    <span class="text-gray-700 font-medium">Omstart med R</span>
                     <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
                         <input type="checkbox" name="toggle" id="toggle-restart" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" onchange="updateSettings()"/>
                         <label for="toggle-restart" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
@@ -564,7 +564,7 @@
                     <p class="mt-2"><strong>Under spel:</strong></p>
                     <ul class="list-disc pl-4">
                         <li><strong>ESC</strong> - Avbryt spelet och gå till menyn</li>
-                        <li><strong>Ctrl + R</strong> - Starta om spelet (om aktiverat i inställningar)</li>
+                        <li><strong>R</strong> - Starta om spelet (om aktiverat i inställningar)</li>
                     </ul>
                 </div>
                 <button onclick="$('info-modal').classList.add('hidden')" class="bg-gray-800 text-white font-bold py-2 rounded-lg hover:bg-gray-900 transition w-full">Stäng</button>
@@ -640,7 +640,7 @@
         
         // Defaults
         let enableCountdown = true;
-        let enableQuickRestart = false; // "Omstart med Ctrl+R" - Standard: Av
+        let enableQuickRestart = false; // "Omstart med R" - Standard: Av
         let nextQLevel = 0; // 0=Av, 1=Nästa, 2=Nästa+Följande, 3=+ en till (Standard: 0)
         let showNumpad = true; // Standard: På
         let answerDelay = 7; // Sekunder
@@ -763,8 +763,8 @@
             const info = $('nextq-info');
             if (lvl === 0) info.textContent = "Inget visas.";
             else if (lvl === 1) info.textContent = "Visar nästa uppgift.";
-            else if (lvl === 2) info.textContent = "Visar två kommande uppgifter (endast Tabell/Tävling).";
-            else if (lvl === 3) info.textContent = "Visar tre kommande uppgifter (endast Tabell/Tävling).";
+            else if (lvl === 2) info.textContent = "Visar de två följande uppgifterna. Endast tillgängligt i spellägena Tabellträning och Tävla.";
+            else if (lvl === 3) info.textContent = "Visar de tre följande uppgifterna. Endast tillgängligt i spellägena Tabellträning och Tävla.";
             
             updatePreviewVisibility();
         }
@@ -979,35 +979,94 @@
             container.innerHTML = '';
             container.classList.remove('hidden');
             
-            // Generate options
-            let options = [];
             const correctAns = currentQ.ans;
             
-            options.push(correctAns);
+            // 1. Generate Smart Candidates Pool
+            let candidateSet = new Set();
             
-            // Generate distractors based on type
-            while(options.length < 4) {
-                let dist;
-                const r = Math.random();
-                
-                if (currentQ.op === 'multiply') {
-                    // Smart distractors for multiplication table
-                    if (r < 0.33) dist = correctAns + currentQ.n1; // e.g. 3x7=21, dist=24
-                    else if (r < 0.66) dist = correctAns - currentQ.n1;
-                    else dist = correctAns + (Math.random() < 0.5 ? 1 : -1) * randInt(1, 5);
-                } else {
-                    // General distractor logic
-                    const offset = randInt(1, 5) * (Math.random() < 0.5 ? 1 : -1);
-                    dist = correctAns + offset;
-                }
-                
-                // Ensure unique and positive (if answer is positive)
-                if (dist !== correctAns && !options.includes(dist) && dist >= 0) {
-                    options.push(dist);
-                }
+            if (currentQ.op === 'multiply') {
+                // Table neighbors for BOTH factors (n1 and n2)
+                [currentQ.n1, currentQ.n2].forEach(factor => {
+                    if (factor === 0) return; // Avoid 0 steps
+                    // +/- 1 step
+                    candidateSet.add(correctAns + factor);
+                    candidateSet.add(correctAns - factor);
+                    // +/- 2 steps
+                    candidateSet.add(correctAns + (factor * 2));
+                    candidateSet.add(correctAns - (factor * 2));
+                });
             }
             
-            // Shuffle
+            // Random close numbers for all types (including multiply to fill gaps)
+            for (let i = 0; i < 10; i++) {
+                const offset = randInt(1, 6) * (Math.random() < 0.5 ? 1 : -1);
+                candidateSet.add(correctAns + offset);
+            }
+
+            // Filter candidates: [1, 100], unique, != correctAns
+            let pool = Array.from(candidateSet).filter(n => 
+                n >= 1 && n <= 100 && n !== correctAns && (Number.isInteger(n) || currentQ.op === 'modulo')
+            );
+            
+            // Split into Smaller and Larger pools
+            let smallerPool = pool.filter(n => n < correctAns);
+            let largerPool = pool.filter(n => n > correctAns);
+            
+            // 2. Determine Rank (0=Smallest ... 3=Largest)
+            const rank = Math.floor(Math.random() * 4); 
+            const neededSmaller = rank; 
+            const neededLarger = 3 - rank;
+            
+            let options = [correctAns];
+            
+            // Helper to fill options
+            const fillOptions = (sourcePool, count, isSmaller) => {
+                let selected = [];
+                // Shuffle source pool
+                sourcePool.sort(() => Math.random() - 0.5);
+                
+                // Take from pool
+                for (let num of sourcePool) {
+                    if (selected.length >= count) break;
+                    if (!options.includes(num)) selected.push(num);
+                }
+                
+                // If not enough, generate random valid numbers
+                let attempts = 0;
+                while (selected.length < count && attempts < 200) {
+                    attempts++;
+                    let rnd;
+                    if (isSmaller) {
+                        // Generate number between 1 and correctAns-1
+                        if (correctAns <= 1) break; 
+                        rnd = randInt(1, Math.floor(correctAns) - 1); 
+                        if (currentQ.op === 'modulo') rnd = parseFloat((Math.random() * (correctAns - 1) + 1).toFixed(1)); 
+                        else rnd = randInt(1, Math.floor(correctAns) - 1);
+                    } else {
+                        // Generate number between correctAns+1 and 100
+                        if (correctAns >= 100) break;
+                        rnd = randInt(Math.floor(correctAns) + 1, 100);
+                    }
+                    
+                    if (rnd >= 1 && rnd <= 100 && rnd !== correctAns && !options.includes(rnd) && !selected.includes(rnd)) {
+                        selected.push(rnd);
+                    }
+                }
+                return selected;
+            };
+            
+            const chosenSmaller = fillOptions(smallerPool, neededSmaller, true);
+            const chosenLarger = fillOptions(largerPool, neededLarger, false);
+            
+            options = options.concat(chosenSmaller).concat(chosenLarger);
+            
+            // Fallback: If we still don't have 4 options
+            while (options.length < 4) {
+                let rnd = randInt(1, 100);
+                if (!options.includes(rnd) && rnd !== correctAns) options.push(rnd);
+            }
+            
+            // Shuffle final display order
             options.sort(() => Math.random() - 0.5);
             
             // Create Buttons
@@ -1015,7 +1074,6 @@
                 const btn = document.createElement('div');
                 btn.className = 'tips-option';
                 
-                // Format for display (handle modulo/decimals)
                 if (typeof opt === 'number' && !Number.isInteger(opt)) btn.textContent = opt.toString().replace('.', ',');
                 else btn.textContent = opt;
                 
@@ -1143,6 +1201,7 @@
                 activeInputId = 'q-input';
             } else { 
                 const i1 = createInput('std-input', 'w-40'); 
+                // Allow comma
                 i1.type = "text"; 
                 i1.setAttribute('inputmode', 'decimal'); 
                 i1.oninput = checkAns; i1.onkeyup = (e) => { if(e.key === 'Enter') checkAns(); }; 
@@ -1450,7 +1509,9 @@
 
         document.onkeydown = e => {
             if (e.key === 'Escape') { clearInterval(timerInterval); clearTimeout(answerTimer); if (!$('start-menu-view').classList.contains('hidden')) return; showView('start-menu-view'); return; }
-            if (enableQuickRestart && e.ctrlKey && e.key === 'r') { e.preventDefault(); replay(); return; }
+            if (enableQuickRestart && e.key.toLowerCase() === 'r') { 
+                if($('record-view').classList.contains('hidden')) { e.preventDefault(); replay(); return; }
+            }
             
             if (!$('start-menu-view').classList.contains('hidden') && ['3','5','7','0'].includes(e.key)) { e.preventDefault(); startTableTraining(e.key==='0'?10:parseInt(e.key)); }
             if ((e.key===' '||e.key==='Enter') && (!$('results-view').classList.contains('hidden') || !$('toplist-view').classList.contains('hidden') || !$('table-training-results-view').classList.contains('hidden'))) { e.preventDefault(); replay(); }
